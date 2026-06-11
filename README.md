@@ -71,4 +71,4 @@ npm install
 npm run dev
 
 
-4. Acesse http://localhost:5173/ no Google Chrome e faça a autenticação com as credenciais administrativas.
+4. Acesse http://localhost:5173/ no Google Chrome e faça a autenticação com as credenciais administrativas. admin 123456
