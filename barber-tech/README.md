@@ -4,43 +4,71 @@ Projeto desenvolvido para a disciplina de **Desenvolvimento de Software WEB** da
 
 ## 👤 Identificação
 * **Acadêmico:** Rodrigo Pinheiro de Queiroz
-* **Tecnologias:** React (Vite), TypeScript, Bootstrap 5.
+* **Tecnologias:** React (Vite), TypeScript, Bootstrap 5, Java, Spring Boot, Spring Security, MySQL.
 
 ---
 
 ## 🎯 Objetivo do Projeto
-O BarberTech é uma aplicação funcional para gestão diária de uma barbearia clássica. O sistema permite visualizar agendamentos de **Corte** e **Barba**, oferecendo um dashboard em tempo real que monitora a produtividade e o faturamento do profissional.
+O BarberTech é uma aplicação funcional para gestão diária de uma barbearia clássica. O sistema permite visualizar agendamentos de **Corte** e **Barba**, oferecendo um dashboard em tempo real que monitora os atendimentos e a produtividade do profissional diretamente integrado ao banco de dados.
 
 ---
 
-## 🏗️ Justificativa da Arquitetura (Critério de Avaliação)
+## 📜 Justificativa da Arquitetura & Critérios Técnicos
 
-A arquitetura do projeto foi pensada para garantir a **separação de responsabilidades** e a **manutenibilidade** do código:
+A arquitetura do projeto foi pensada para garantir a **separação de responsabilidades** e a **manutenibilidade** do código, atendendo rigorosamente aos critérios de avaliação estabelecidos:
 
-1.  **Componentização Modular:** A interface foi decomposta em componentes menores (`Sidebar`, `CardServico`, `Footer`). Isso facilita a reutilização e isola a lógica de renderização, permitindo que alterações visuais em um card não afetem a estrutura do dashboard.
-2.  **Lifting State Up (Elevação de Estado):** O estado da aplicação (`agendamentos`) foi centralizado no `App.tsx`. Isso garante uma **Single Source of Truth** (Fonte Única de Verdade), onde o componente pai gerencia os dados e os filhos apenas os exibem ou disparam eventos de atualização.
-3.  **Segurança com TypeScript:** Foi implementada a interface `IAgendamento` para definir o contrato de dados. O uso de *String Literal Types* para o `tipo` de serviço (Corte | Barba) impede a entrada de dados inválidos e garante a integridade durante o desenvolvimento.
-4.  **Layout Assimétrico e Responsivo:** Utilizou-se o sistema de 12 colunas do **Bootstrap**. No Desktop, a aplicação apresenta uma proporção assimétrica de 3/9 (Sidebar/Main), enquanto no Mobile as colunas se empilham em 12 unidades automaticamente via classes utilitárias.
+### 1. Organização do Código & Clean Code
+* **Front-end (React + TypeScript):** Interface decomposta em componentes modulares e reutilizáveis (`Sidebar`, `CardServico`, `Login` e `ModalAgendamento`). O uso do TypeScript garante tipagem estrita (`IAgendamento`), eliminando bugs em tempo de compilação.
+* **Back-end (Java + Spring Boot):** Divisão clara em camadas utilizando os padrões do ecossistema Spring (Controllers, Services, Repositories e DTOs).
+
+### 2. Segurança de Alto Nível (JWT & CORS)
+* **Autenticação Stateless:** Controle de acesso baseado em **Tokens JWT**. As senhas dos usuários são criptografadas no banco de dados via **BCrypt**.
+* **Axios Interceptors:** Mecanismo implementado no Front-end que captura o token armazenado no `localStorage` após o login bem-sucedido e o injeta automaticamente no cabeçalho `Authorization: Bearer <token>` para todas as requisições subsequentes.
+* **Controle de CORS:** Configuração explícita de compartilhamento de recursos de origens cruzadas (`CorsConfigurationSource`) no Spring Security, permitindo que o servidor Java (`localhost:8080`) responda com segurança às chamadas originadas pelo navegador na porta do React (`localhost:5173`).
+
+### 3. Semântica HTTP & Tratamento de Erros
+A comunicação entre o cliente e o servidor respeita estritamente as convenções de verbos e códigos de status do protocolo HTTP:
+* `GET /agendamento` e `/cliente` -> Consultas de dados efetuadas em chamadas assíncronas paralelas via `Promise.all` para otimizar a performance.
+* `POST /auth/login` -> Endpoint público para autenticação de sessão.
+* `POST /agendamento/salvar` -> Persistência de novos dados validando o payload.
+* `DELETE /agendamento/{id}` -> Remoção semântica do registro no banco MySQL ao concluir o serviço.
 
 ---
 
-## 🛠️ Requisitos Técnicos Implementados
+## 📊 Entidades & Relacionamentos (Fluxo do CRUD)
 
-- [x] **Vite + React + TypeScript**: Configuração moderna e rápida.
-- [x] **Semântica HTML5**: Uso de tags `aside`, `main`, `header`, `section` e `address`.
-- [x] **Bootstrap via CDN**: Estrutura de layout e componentes de UI.
-- [x] **Lógica de Estado**: Hook `useState` para atualização dinâmica do Dashboard.
-- [x] **CSS Personalizado**: Estilização clássica nas cores azul marinho e vermelho.
+O sistema cumpre com o requisito de manipulação de entidades relacionadas. A entidade principal **Agendamento** realiza um cruzamento em tempo real de chaves estrangeiras no banco de dados para vincular:
+1. Um **Cliente** existente (`clienteId`)
+2. Um **Barbeiro** específico (`barbeiroId`)
+3. A data e horário desejados (`LocalDateTime`), devidamente tratada no Front-end para o padrão ISO-8601 exigido pelo desserializador do Spring Boot.
 
 ---
 
-## 🚀 Como executar o projeto
+## 📐 Diagrama do Banco de Dados (ERD)
 
-1. Clone o repositório.
-2. Certifique-se de ter o **Node.js** instalado.
-3. Execute a instalação das dependências:
+Abaixo está o modelo relacional das tabelas populadas no MySQL que demonstra a eficácia na manipulação, relacionamento e recuperação de dados:
+
+![Diagrama Entidade Relacionamento](./diagrama-banco.png)
+
+---
+
+## 🏃‍♂️ Como Rodar o Projeto
+
+### Pré-requisitos
+* Java JDK 17 ou superior
+* MySQL Server ativo
+* Node.js instalado
+
+### Execução
+1. Certifique-se de que o banco de dados MySQL esteja rodando.
+2. Inicialize o Back-end Java através do terminal do projeto:
    ```bash
-   npm install
-4. Inicie o servidor de desenvolvimento:
+   ./mvnw spring-boot:run
+3.  Inicialize o Front-end React na pasta do projeto:
+
+Bash
+npm install
 npm run dev
-5. Acesse o endereço indicado no terminal (geralmente http://localhost:5173).
+
+
+4. Acesse http://localhost:5173/ no Google Chrome e faça a autenticação com as credenciais administrativas.
