@@ -22,30 +22,35 @@ public class FiltroSeguranca extends OncePerRequestFilter {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Método que intercepta a requisição HTTP (Slide 47)
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
+
+        System.out.println(">>> [FILTRO] Requisição recebida: " + request.getMethod() + " " + request.getRequestURI());
+
         var token = this.recuperarToken(request);
-        
+        System.out.println(">>> [FILTRO] Token extraído: " + token);
+
         if (token != null) {
-            var login = tokenService.validarToken(token); // Decodifica o token e pega o login (Slide 1263)
-            UserDetails usuario = usuarioRepository.findByLogin(login); // Busca os dados do usuário (Slide 1264)
-            
-            // Se encontrou, injeta o usuário autenticado no contexto do Spring (Slide 1261)
-            var autenticacao = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(autenticacao);
+            var login = tokenService.validarToken(token);
+            System.out.println(">>> [FILTRO] Login do token: '" + login + "'");
+
+            if (login != null && !login.isEmpty()) {
+                UserDetails usuario = usuarioRepository.findFirstByLogin(login).orElse(null);
+                if (usuario != null) {
+                    var autenticacao = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(autenticacao);
+                    System.out.println(">>> [FILTRO] Usuário autenticado: " + login);
+                }
+            }
         }
-        
-        // Passa a requisição para frente (Slide 1262)
+
         filterChain.doFilter(request, response);
     }
 
-    // Método auxiliar para extrair a String do token tirando a palavra "Bearer " (Slide 48)
     private String recuperarToken(HttpServletRequest request) {
-        var authHeader = request.getHeader("Authorization"); // Busca o cabeçalho (Slide 1282)
+        var authHeader = request.getHeader("Authorization");
         if (authHeader == null) return null;
-        return authHeader.replace("Bearer ", ""); // Remove "Bearer " e mantém só o token (Slide 1281)
+        return authHeader.replace("Bearer ", "");
     }
 }

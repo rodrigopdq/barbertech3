@@ -17,7 +17,7 @@ import api.repository.UsuarioRepository;
 import api.config.TokenService;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/auth") // ✅ FIX: barra inicial adicionada para casar com as regras do SecurityFilterChain
 public class AutenticacaoController {
 
     @Autowired
@@ -35,23 +35,23 @@ public class AutenticacaoController {
         try {
             // Cria o token interno do Spring com o login e senha digitados
             var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.senha());
-            
+
             // O AuthenticationManager vai lá no banco, descriptografa a senha e checa se bate
             var auth = this.authenticationManager.authenticate(usernamePassword);
 
-            // Se a senha estiver certa, ele passa para a linha de baixo. 
+            // Se a senha estiver certa, ele passa para a linha de baixo.
             var token = tokenService.gerarToken((Usuario) auth.getPrincipal());
 
             // Devolve o token dentro de um JSON para o Front-end
             return ResponseEntity.ok(new LoginRespostaDto(token));
-            
+
         } catch (Exception e) {
-            // Se houver qualquer erro na geração do token ou injeção, 
+            // Se houver qualquer erro na geração do token ou injeção,
             // isso vai forçar o terminal do VS Code a cuspir o erro real e detalhado!
             System.out.println("--- [ERRO DETECTADO NO FLUXO DE LOGIN] ---");
             e.printStackTrace();
             System.out.println("------------------------------------------");
-            
+
             // Retorna um erro 500 amigável com o texto do problema no Postman
             return ResponseEntity.status(500).body("Erro interno no servidor: " + e.getMessage());
         }
@@ -61,7 +61,7 @@ public class AutenticacaoController {
     @PostMapping("/registrar")
     public ResponseEntity registrar(@RequestBody RegistroDto data) {
         // Verifica se o login já não existe cadastrado no sistema
-        if (this.repository.findByLogin(data.login()) != null) {
+        if (this.repository.findFirstByLogin(data.login()).isPresent()) {
             return ResponseEntity.badRequest().build();
         }
 
