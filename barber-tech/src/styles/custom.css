@@ -1,0 +1,17 @@
+/* src/styles/custom.css */
+body {
+  background-color: #f4f7f6;
+  font-family: 'Roboto', sans-serif;
+}
+
+.bg-dark {
+  background-color: #0d1b2a !important; /* Azul Marinho Profundo */
+}
+
+.text-info {
+  color: #00b4d8 !important; /* Azul claro para números */
+}
+
+.text-danger {
+  color: #e63946 !important; /* Vermelho para faturamento */
+}
